@@ -2,8 +2,8 @@
 #define GREENPIN 1
 #define REDPIN 21
 
-#define LIGHTBARRIER_INDOOR 13
-#define LIGHTBARRIER_OUTDOOR 12
+#define LIGHTBARRIER_INDOOR 13 // Sensor "inside" the room
+#define LIGHTBARRIER_OUTDOOR 12 // Sensor "outside" the room
 
 void setColor(int r, int g, int b) {
   analogWrite(REDPIN, r);
