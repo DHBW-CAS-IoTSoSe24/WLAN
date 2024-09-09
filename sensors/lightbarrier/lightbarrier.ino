@@ -136,11 +136,9 @@ void changeState(bool is_sensor_indoor_open, bool is_sensor_outdoor_open) {
         CURRENT_SENSOR_STATE = SensorState::ClosedIncoming;
       }
       break;
-    // TODO: Check if next Incoming|Outgoing starts. In Case both are open go to Open State
     case SensorState::Outgoing:
       CURRENT_SENSOR_STATE = SensorState::Open;
       break;
-    // TODO: Check if next Incoming|Outgoing starts. In Case both are open go to Open State
     case SensorState::Incoming:
       CURRENT_SENSOR_STATE = SensorState::Open;
       break;
