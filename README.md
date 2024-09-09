@@ -1,4 +1,5 @@
 # WLAN
+**Contributor**: Florian Brändle, Maximilian Girnt, René Kienzle, Marc Schedel
 
 ## Installation und Einrichtung der Entwicklungsumgebung für den ESP32
 
