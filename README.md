@@ -82,3 +82,62 @@ Eine Verbindung mit 5V führte nicht zum gewünschten Ergebnis, weshalb 3.3V gew
 - Pin (-) ist mit GND des ESP32-Boards verbunden.
 - Pin (+) ist jeweils mit einem eigenen GPIO-Pin verbunden, um das Signal zu erfassen,
 wenn die Lichtschranke unterbrochen wird. In diesem Fall wurden die GPIO-Pins 12 und 13 verwendet.
+
+### Interner Sensorstatus
+
+Intern wird eine einfache Zustandsmaschine verwendet, um zu bestimmen, ob ein Objekt den Raum betritt oder verlässt. Die Zustandsmaschine durchläuft dabei verschiedene Status, basierend auf den Signalen der beiden Lichtschrankensensoren.
+
+Im Ausgangszustand, "Open", sind beide Lichtschranken offen und es wird keine Bewegung erkannt. Wenn ein Sensor blockiert wird, wechselt die Maschine entweder in den Zustand "StartOutgoing" (bei ausgehender Bewegung) oder "StartIncoming" (bei eingehender Bewegung). Sobald beide Lichtschrankensensoren blockiert sind, wechselt der Status zu "ClosedOutgoing" für ausgehende oder "ClosedIncoming" für eingehende Bewegungen.
+
+Sobald ein Sensor wieder freigegeben wird, geht die Zustandsmaschine in "CompleteOutgoing" oder "CompleteIncoming" über, abhängig von der Bewegungsrichtung.
+
+Schließlich wird im Zustand "Outgoing" festgestellt, dass ein Objekt den Raum verlassen hat, während der Zustand "Incoming" signalisiert, dass ein Objekt den Raum betreten hat.
+
+```mermaid
+stateDiagram-v2
+    [*] --> Open
+    Open --> StartOutgoing: Indoor geschlossen & Outdoor geöffnet
+    Open --> StartIncoming: Indoor geöffnet & Outdoor geschlossen
+    StartOutgoing --> ClosedOutgoing: Indoor geschlossen & Outdoor geschlossen
+    StartOutgoing --> Open: Indoor geöffnet & Outdoor geöffnet
+    StartIncoming --> ClosedIncoming: Indoor geschlossen & Outdoor geschlossen
+    StartIncoming --> Open: Indoor geöffnet & Outdoor geöffnet
+    ClosedOutgoing --> CompleteOutgoing: Indoor geöffnet & Outdoor geschlossen
+    ClosedOutgoing --> StartOutgoing: Indoor geschhlossen & Outdoor geöffnet
+    ClosedIncoming --> CompleteIncoming: Indoor geschlossen & Outdoor geöffnet
+    ClosedIncoming --> StartIncoming: Indoor geöffnet & Outdoor geschlossen
+    CompleteOutgoing --> Outgoing: Indoor geöffnet & Outdoor geöffnet
+    CompleteOutgoing --> ClosedOutgoing: Indoor geschlossen & Outdoor geschlossen
+    CompleteIncoming --> Incoming: Indoor geöffnet & Outdoor geöffnet
+    CompleteIncoming --> ClosedIncoming: Indoor geschlossen & Outdoor geschlossen
+    Outgoing --> Open
+    Incoming --> Open
+```
+Der Sensor und die dazugehörige Zustandsmaschine sind bewusst einfach gehalten, was jedoch zu Fehlern bei undefinierten Zustandsübergängen führen kann. Ein typisches Beispiel für einen Fehler tritt auf, wenn ein Objekt den Raum betritt, während gleichzeitig ein anderes den Raum verlässt. In diesem Fall werden beide Lichtschrankensensoren gleichzeitig blockiert, und die Zustandsmaschine kann keinen korrekten Übergang vom Status "Open" finden. Solche Situationen führen zu Messfehlern, die im Rahmen dieses Projekts der Einfachheit halber nicht weiter berücksichtigt wurden.
+
+#### Einschränkungen
+
+Die aktuelle Lichtschranke unterliegt mehreren Einschränkungen, um zuverlässig zu funktionieren:
+- Es darf jeweils nur ein Objekt den Raum betreten oder verlassen.
+- Zwischen den Objekten muss ein ausreichender Abstand vorhanden sein.
+- Die Höhe der Objekte muss innerhalb eines bestimmten Mindest- und Maximalbereichs liegen, abhängig von der Anbringungshöhe des Sensors.
+
+Diese Einschränkungen führen insbesondere in Szenarien, wie dem Zählen von Kühen, zu potenziellen Messfehlern. Kühe verhalten sich in der Praxis oft nicht so, wie es für die korrekte Erfassung durch den Sensor optimal wäre, was die Genauigkeit der Messungen beeinträchtigen kann.
+
+### Externer Sensorstatus
+
+Der Lichtschrankensensor übermittelt seinen Status basierend auf dem aktuellen Zustand der Zustandsmaschine.
+Der Sensorstatus wird dabei wie folgt bestimmt:
+
+| Interner Status  | Externer Status (Wert) | Externer Status (Beschreibung)               |
+|------------------|------------------------|----------------------------------------------|
+| Open             | 0                      | Sensor ist frei.                             |
+| Outgoing         | 1                      | Sensor hat eine ausgehende Bewegung erkannt. |
+| Incoming         | 2                      | Sensor hat eine eingehende Bewegung erkannt. |
+| StartOutgoing    | 3                      | Sensor ist blockiert.                        |
+| StartIncoming    | 3                      | Sensor ist blockiert.                        |
+| ClosedOutgoing   | 3                      | Sensor ist blockiert.                        |
+| ClosedIncoming   | 3                      | Sensor ist blockiert.                        |
+| CompleteOutgoing | 3                      | Sensor ist blockiert.                        |
+| CompleteIncoming | 3                      | Sensor ist blockiert.                        |
+
