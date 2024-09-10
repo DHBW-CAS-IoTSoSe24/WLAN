@@ -82,3 +82,26 @@ Eine Verbindung mit 5V führte nicht zum gewünschten Ergebnis, weshalb 3.3V gew
 - Pin (-) ist mit GND des ESP32-Boards verbunden.
 - Pin (+) ist jeweils mit einem eigenen GPIO-Pin verbunden, um das Signal zu erfassen,
 wenn die Lichtschranke unterbrochen wird. In diesem Fall wurden die GPIO-Pins 12 und 13 verwendet.
+
+### Interner Sensorstatus
+
+```mermaid
+stateDiagram-v2
+    [*] --> Open
+    Open --> StartOutgoing: Indoor geschlossen & Outdoor geöffnet
+    Open --> StartIncoming: Indoor geöffnet & Outdoor geschlossen
+    StartOutgoing --> ClosedOutgoing: Indoor geschlossen & Outdoor geschlossen
+    StartOutgoing --> Open: Indoor geöffnet & Outdoor geöffnet
+    StartIncoming --> ClosedIncoming: Indoor geschlossen & Outdoor geschlossen
+    StartIncoming --> Open: Indoor geöffnet & Outdoor geöffnet
+    ClosedOutgoing --> CompleteOutgoing: Indoor geöffnet & Outdoor geschlossen
+    ClosedOutgoing --> StartOutgoing: Indoor geschhlossen & Outdoor geöffnet
+    ClosedIncoming --> CompleteIncoming: Indoor geschlossen & Outdoor geöffnet
+    ClosedIncoming --> StartIncoming: Indoor geöffnet & Outdoor geschlossen
+    CompleteOutgoing --> Outgoing: Indoor geöffnet & Outdoor geöffnet
+    CompleteOutgoing --> ClosedOutgoing: Indoor geschlossen & Outdoor geschlossen
+    CompleteIncoming --> Incoming: Indoor geöffnet & Outdoor geöffnet
+    CompleteIncoming --> ClosedIncoming: Indoor geschlossen & Outdoor geschlossen
+    Outgoing --> Open
+    Incoming --> Open
+```
