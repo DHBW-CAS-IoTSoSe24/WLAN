@@ -123,3 +123,21 @@ Die aktuelle Lichtschranke unterliegt mehreren Einschränkungen, um zuverlässig
 - Die Höhe der Objekte muss innerhalb eines bestimmten Mindest- und Maximalbereichs liegen, abhängig von der Anbringungshöhe des Sensors.
 
 Diese Einschränkungen führen insbesondere in Szenarien, wie dem Zählen von Kühen, zu potenziellen Messfehlern. Kühe verhalten sich in der Praxis oft nicht so, wie es für die korrekte Erfassung durch den Sensor optimal wäre, was die Genauigkeit der Messungen beeinträchtigen kann.
+
+### Externer Sensorstatus
+
+Der Lichtschrankensensor übermittelt seinen Status basierend auf dem aktuellen Zustand der Zustandsmaschine.
+Der Sensorstatus wird dabei wie folgt bestimmt:
+
+| Interner Status  | Externer Status (Wert) | Externer Status (Beschreibung)               |
+|------------------|------------------------|----------------------------------------------|
+| Open             | 0                      | Sensor ist frei.                             |
+| Outgoing         | 1                      | Sensor hat eine ausgehende Bewegung erkannt. |
+| Incoming         | 2                      | Sensor hat eine eingehende Bewegung erkannt. |
+| StartOutgoing    | 3                      | Sensor ist blockiert.                        |
+| StartIncoming    | 3                      | Sensor ist blockiert.                        |
+| ClosedOutgoing   | 3                      | Sensor ist blockiert.                        |
+| ClosedIncoming   | 3                      | Sensor ist blockiert.                        |
+| CompleteOutgoing | 3                      | Sensor ist blockiert.                        |
+| CompleteIncoming | 3                      | Sensor ist blockiert.                        |
+
